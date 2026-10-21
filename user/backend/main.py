@@ -1,4 +1,4 @@
-import sqlite3, json, hashlib, secrets, unicodedata
+import re, sqlite3, json, hashlib, secrets, unicodedata
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, Header
 from fastapi.staticfiles import StaticFiles
@@ -40,6 +40,15 @@ def user_id(authorization):
 class Cred(BaseModel): username: str; password: str
 class Listen(BaseModel): place_id: str; lang: str; kind: str = "tts"
 
+def normalize_identifier(value):
+    value = value.strip()
+    if "@" in value:
+        return value.lower()
+    return re.sub(r"[\s().-]", "", value)
+
+def valid_identifier(value):
+    return bool(re.fullmatch(r"\+?[0-9]{9,15}", value) or re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", value))
+
 def token_for(c, uid):
     t = secrets.token_hex(24); c.execute("insert into sessions values(?,?)", (t, uid)); c.commit(); return t
 
@@ -71,15 +80,18 @@ def resolve(code: str):
 # ---- Tài khoản (g, h) ----
 @app.post("/api/register")
 def register(c: Cred):
-    if len(c.username) < 3 or len(c.password) < 6: raise HTTPException(400, "Tên ≥ 3 ký tự, mật khẩu ≥ 6 ký tự")
+    identifier = normalize_identifier(c.username)
+    if not valid_identifier(identifier): raise HTTPException(400, "Nhập email hợp lệ hoặc số điện thoại từ 9 đến 15 số")
+    if len(c.password) < 6: raise HTTPException(400, "Mật khẩu phải có ít nhất 6 ký tự")
     salt = secrets.token_hex(8); con = db()
-    try: cur = con.execute("insert into users(username,pw,salt) values(?,?,?)", (c.username.strip(), hash_pw(c.password, salt), salt))
-    except sqlite3.IntegrityError: raise HTTPException(409, "Tên đăng nhập đã tồn tại")
-    return {"token": token_for(con, cur.lastrowid), "username": c.username.strip()}
+    try: cur = con.execute("insert into users(username,pw,salt) values(?,?,?)", (identifier, hash_pw(c.password, salt), salt))
+    except sqlite3.IntegrityError: raise HTTPException(409, "Email hoặc số điện thoại đã được đăng ký")
+    return {"token": token_for(con, cur.lastrowid), "username": identifier}
 
 @app.post("/api/login")
 def login(c: Cred):
-    con = db(); u = con.execute("select * from users where username=?", (c.username.strip(),)).fetchone()
+    identifier = normalize_identifier(c.username)
+    con = db(); u = con.execute("select * from users where username=?", (identifier,)).fetchone()
     if not u or u["pw"] != hash_pw(c.password, u["salt"]): raise HTTPException(401, "Sai tên đăng nhập hoặc mật khẩu")
     return {"token": token_for(con, u["id"]), "username": u["username"]}
 

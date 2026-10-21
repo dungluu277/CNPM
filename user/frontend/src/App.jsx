@@ -1,7 +1,26 @@
 import { useEffect, useRef, useState } from "react";
+import { BrowserQRCodeReader } from "@zxing/browser";
 
-const LANG = { vi: { label: "Tiếng Việt", voice: "vi-VN" }, en: { label: "English", voice: "en-US" }, ja: { label: "日本語", voice: "ja-JP" } };
+const LANG = {
+  vi: { label: "Vietnamese", voice: "vi-VN" },
+  en: { label: "English", voice: "en-US" },
+  ja: { label: "Japanese", voice: "ja-JP" },
+  zh: { label: "Chinese", voice: "zh-CN" },
+  ko: { label: "Korean", voice: "ko-KR" }
+};
 const CATS = { all: "Tất cả", historyCat: "Lịch sử", architecture: "Kiến trúc", culture: "Văn hóa", river: "Sông nước" };
+const HERO_BACKGROUND = "/images/anh_nen.jpg";
+const PLACE_IMAGES = {
+  "dinh-doc-lap": "/images/ddl.jpg",
+  "buu-dien": "/images/buu_dien.jpg",
+  "cho-ben-thanh": "/images/ben_thanh_2.jpg",
+  "nha-hat": "/images/nha-hat.jpg",
+  "nguyen-hue": "/images/nguyen-hue.jpg",
+  "bach-dang": "/images/bach_dang.jpg",
+  "bao-tang-chung-tich-chien-tranh": "/images/bao-tang-chung-tich-chien-tranh.jpg",
+  "landmark-81": "/images/landmark-81.jpg",
+  "chua-ngoc-hoang": "/images/chua-ngoc-hoang.jpg"
+};
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -10,10 +29,14 @@ export default function App() {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState("featured");
   const [auth, setAuth] = useState(() => JSON.parse(localStorage.getItem("auth") || "null"));
+  const [guest, setGuest] = useState(false);
   const [favs, setFavs] = useState([]);
   const [hist, setHist] = useState([]);
   const [modal, setModal] = useState(null); // {type:'place'|'auth'|'scan', place}
   const [toast, setToast] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const say = (m) => { setToast(m); setTimeout(() => setToast(""), 3500); };
   const api = async (url, opt = {}) => {
@@ -25,12 +48,19 @@ export default function App() {
 
   // (a, b) xem danh sách + tìm kiếm
   useEffect(() => {
-    const t = setTimeout(() => api(`/places?q=${encodeURIComponent(q)}&category=${cat}`).then(setPlaces).catch((e) => say(e.message)), 200);
+    const t = setTimeout(() => {
+      setLoading(true);
+      setLoadError("");
+      api(`/places?q=${encodeURIComponent(q)}&category=${cat}`)
+        .then(setPlaces)
+        .catch((e) => setLoadError(e.message))
+        .finally(() => setLoading(false));
+    }, 200);
     return () => clearTimeout(t);
-  }, [q, cat]);
+  }, [q, cat, refreshKey]);
   useEffect(() => { if (auth) { api("/favorites").then(setFavs).catch(() => logout()); loadHist(); } else { setFavs([]); setHist([]); } }, [auth]);
   const loadHist = () => api("/history").then(setHist).catch(() => {});
-  const logout = () => { localStorage.removeItem("auth"); setAuth(null); setPage("home"); };
+  const logout = () => { localStorage.removeItem("auth"); setAuth(null); setGuest(false); setPage("home"); };
   const needLogin = () => { say("Vui lòng đăng nhập để dùng chức năng này"); setModal({ type: "auth" }); };
 
   // (h) lưu yêu thích
@@ -59,7 +89,7 @@ export default function App() {
         </nav>
         <div className="header-right">
           <button className="btn small" onClick={() => setModal({ type: "scan" })}>▣ Quét QR</button>
-          {auth ? <button className="btn small" onClick={logout}>{auth.username} · Đăng xuất</button> : <button className="btn small primary" onClick={() => setModal({ type: "auth" })}>Đăng nhập</button>}
+          {auth ? <button className="btn small" onClick={logout}>{auth.username} · Đăng xuất</button> : guest ? <button className="btn small guest-badge" onClick={() => setModal({ type: "auth" })}>Khách · Đăng nhập</button> : <button className="btn small primary" onClick={() => setModal({ type: "auth" })}>Đăng nhập</button>}
         </div>
       </header>
 
@@ -68,7 +98,7 @@ export default function App() {
           {page === "history" ? <History hist={hist} places={places} api={api} reload={loadHist} openPlace={openPlace} say={say} /> : (
             <>
               {page === "home" && (
-                <section className="hero">
+                <section className="hero hero-text-only hero-with-background" style={{ backgroundImage: `url(${HERO_BACKGROUND})` }}>
                   <div>
                     <div className="eyebrow">SAIGON, IN YOUR LANGUAGE</div>
                     <h1>Nghe thành phố<br /><em>kể chuyện.</em></h1>
@@ -77,21 +107,25 @@ export default function App() {
                       <a className="btn primary" href="#destinations">Bắt đầu khám phá ↗</a>
                       <button className="btn" onClick={() => setModal({ type: "scan" })}>▣ Quét QR</button>
                     </div>
-                    <div className="hero-note"><div className="avatars"><span>VI</span><span>EN</span><span>JP</span></div><span>3 ngôn ngữ · Một Sài Gòn, nhiều câu chuyện</span></div>
-                  </div>
-                  <div className="hero-art" style={{ background: "#d5ded0", display: "grid", placeItems: "center", fontSize: 120 }}>🏛️
-                    <div className="floating"><div className="wave">{[...Array(7)].map((_, i) => <i key={i} />)}</div>
-                      <div><strong>Dinh Độc Lập · Câu chuyện kiến trúc</strong><small>Chạm để nghe bằng ngôn ngữ của bạn</small></div>
-                      <button className="play" onClick={() => places[0] && openPlace(places.find((p) => p.id === "dinh-doc-lap") || places[0])}>▶</button></div>
-                  </div>
+                    <div className="hero-note"><div className="avatars"><span>VI</span><span>EN</span><span>JP</span><span>中</span><span>한</span></div><span>Vietnamese · English · Japanese · Chinese · Korean</span></div>
+                      <div className="hero-stats" aria-label="Thông tin nhanh">
+                        <div><strong>{places.length || "—"}</strong><span>điểm đến</span></div>
+                        <div><strong>5</strong><span>ngôn ngữ</span></div>
+                        <div><strong>24/7</strong><span>tự khám phá</span></div>
+                      </div>
+                    </div>
                 </section>
               )}
               <section id="destinations">
-                <div className="section-head"><div><div className="eyebrow">{page === "home" ? "HÀNH TRÌNH CỦA RIÊNG BẠN" : "ĐÃ LƯU"}</div><h2>{page === "home" ? "Những điểm đến, những câu chuyện" : "Địa điểm yêu thích"}</h2></div><span className="muted">{shown.length} địa điểm</span></div>
+                <div className="section-head"><div><div className="eyebrow">{page === "home" ? "HÀNH TRÌNH CỦA RIÊNG BẠN" : "ĐÃ LƯU"}</div><h2>{page === "home" ? "Những điểm đến, những câu chuyện" : "Địa điểm yêu thích"}</h2><p className="section-subtitle">{page === "home" ? "Mỗi góc phố là một lát cắt của thành phố." : "Những câu chuyện bạn muốn nghe lại."}</p></div><span className="result-count">{shown.length}<small> địa điểm</small></span></div>
                 <div className="toolbar">
                   <div className="chips">{Object.entries(CATS).map(([k, v]) => <button key={k} className={"chip " + (cat === k ? "active" : "")} onClick={() => setCat(k)}>{v}</button>)}</div>
                   <div className="search-tools">
-                    <input className="search" placeholder="Tìm địa điểm, tên đường…" value={q} onChange={(e) => setQ(e.target.value)} />
+                    <div className="search-wrap">
+                      <span aria-hidden="true">⌕</span>
+                      <input className="search" aria-label="Tìm địa điểm, tên đường" placeholder="Tìm địa điểm, tên đường…" value={q} onChange={(e) => setQ(e.target.value)} />
+                      {q && <button className="clear-search" aria-label="Xóa tìm kiếm" onClick={() => setQ("")}>×</button>}
+                    </div>
                     <select className="sort" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sắp xếp địa điểm">
                       <option value="featured">Nổi bật</option>
                       <option value="name">Theo tên</option>
@@ -99,13 +133,14 @@ export default function App() {
                     </select>
                   </div>
                 </div>
+                {loadError && <div className="error-state" role="alert"><strong>Không thể tải danh sách địa điểm</strong><span>{loadError}. Hãy kiểm tra backend rồi thử lại.</span><button className="btn small" onClick={() => setRefreshKey((value) => value + 1)}>Thử lại</button></div>}
                 <div className="grid">
-                  {shown.length ? shown.map((p) => (
+                  {loading ? [...Array(6)].map((_, i) => <div className="card skeleton-card" key={i}><div className="skeleton-art" /><div className="card-body"><div className="skeleton-line wide" /><div className="skeleton-line" /><div className="skeleton-line short" /></div></div>) : shown.length ? shown.map((p) => (
                     <article className="card" key={p.id}>
-                      <div className="card-art" style={{ background: p.color, display: "grid", placeItems: "center", fontSize: 64 }}>
-                        {{ palace: "🏛️", post: "📮", market: "🏪", opera: "🎭", street: "🚶", river: "⛴️" }[p.art]}
+                      <div className={"card-art " + (PLACE_IMAGES[p.id] ? "has-place-image" : "")} style={{ background: p.color }}>
+                        {PLACE_IMAGES[p.id] ? <img src={PLACE_IMAGES[p.id]} alt={p.name} /> : <span className="card-art-icon" aria-hidden="true">{{ palace: "🏛️", post: "📮", market: "🏪", opera: "🎭", street: "🚶", river: "⛴️", museum: "🏛️", tower: "🏙️", pagoda: "🛕" }[p.art]}</span>}
                         <span className="tag">{CATS[p.category]}</span>
-                        <button className={"favorite " + (favs.includes(p.id) ? "saved" : "")} onClick={() => toggleFav(p.id)}>{favs.includes(p.id) ? "♥" : "♡"}</button>
+                        <button className={"favorite " + (favs.includes(p.id) ? "saved" : "")} aria-label={favs.includes(p.id) ? `Bỏ lưu ${p.name}` : `Lưu ${p.name}`} onClick={() => toggleFav(p.id)}>{favs.includes(p.id) ? "♥" : "♡"}</button>
                       </div>
                       <div className="card-body">
                         <button className="card-title" onClick={() => openPlace(p)}>{p.name}</button>
@@ -115,7 +150,7 @@ export default function App() {
                           <button className="text-link" onClick={() => openPlace(p)}>Nghe câu chuyện ↗</button></div>
                       </div>
                     </article>
-                  )) : <div className="empty">Chưa có địa điểm phù hợp.</div>}
+                  )) : <div className="empty"><span className="empty-icon">⌕</span><strong>Chưa có địa điểm phù hợp</strong><span>Thử từ khóa khác hoặc chọn một danh mục khác.</span>{(q || cat !== "all") && <button className="btn small" onClick={() => { setQ(""); setCat("all"); }}>Xóa bộ lọc</button>}</div>}
                 </div>
               </section>
             </>
@@ -130,7 +165,7 @@ export default function App() {
             <div className="modal-head"><strong>{{ place: modal.place?.name, auth: "Tài khoản", scan: "Quét QR · Mở câu chuyện" }[modal.type]}</strong><button className="close" onClick={() => setModal(null)}>×</button></div>
             <div className="modal-content">
               {modal.type === "place" && <PlaceDetail p={modal.place} fav={favs.includes(modal.place.id)} toggleFav={toggleFav} auth={auth} api={api} reload={loadHist} say={say} />}
-              {modal.type === "auth" && <Auth setAuth={(a) => { localStorage.setItem("auth", JSON.stringify(a)); setAuth(a); setModal(null); say("Xin chào " + a.username); }} />}
+              {modal.type === "auth" && <Auth setAuth={(a) => { localStorage.setItem("auth", JSON.stringify(a)); setAuth(a); setGuest(false); setModal(null); say("Xin chào " + a.username); }} onGuest={() => { setGuest(true); setModal(null); say("Bạn đang sử dụng chế độ khách"); }} />}
               {modal.type === "scan" && <Scanner api={api} onFound={(p) => { say("Đã nhận diện địa điểm"); openPlace(p); }} say={say} />}
             </div>
           </dialog>
@@ -160,9 +195,11 @@ function PlaceDetail({ p, fav, toggleFav, auth, api, reload, say }) {
     if (state === "speaking") { speechSynthesis.pause(); return setState("paused"); }
     if (state === "paused") { speechSynthesis.resume(); return setState("speaking"); }
     if (!window.speechSynthesis) return say("Trình duyệt không hỗ trợ đọc văn bản");
-    const v = voices.find((x) => x.lang.toLowerCase().startsWith(lang));
+    const narration = p.texts[lang]?.trim() || "";
+    if (!narration) return say("Chưa có nội dung cho ngôn ngữ này");
+    const v = voices.find((x) => x.lang.toLowerCase().startsWith(LANG[lang].voice.toLowerCase().split("-")[0]));
     if (!v && voices.length) return say("Thiết bị chưa có giọng đọc " + LANG[lang].label);
-    const u = new SpeechSynthesisUtterance(p.texts[lang]);
+    const u = new SpeechSynthesisUtterance(narration);
     if (v) u.voice = v;
     u.lang = LANG[lang].voice; u.rate = rate; u.onend = () => setState("stopped");
     speechSynthesis.speak(u); setState("speaking");
@@ -171,7 +208,9 @@ function PlaceDetail({ p, fav, toggleFav, auth, api, reload, say }) {
   return (
     <>
       <div className="detail-top">
-        <div className="detail-art" style={{ background: p.color, display: "grid", placeItems: "center", fontSize: 80 }}>{{ palace: "🏛️", post: "📮", market: "🏪", opera: "🎭", street: "🚶", river: "⛴️" }[p.art]}</div>
+        <div className="detail-art" style={{ background: p.color }}>
+          {PLACE_IMAGES[p.id] ? <img src={PLACE_IMAGES[p.id]} alt={p.name} /> : <span aria-hidden="true">{{ palace: "🏛️", post: "📮", market: "🏪", opera: "🎭", street: "🚶", river: "⛴️", museum: "🏛️", tower: "🏙️", pagoda: "🛕" }[p.art]}</span>}
+        </div>
         <div>
           <span className="eyebrow">{CATS[p.category]}</span>
           <h2 style={{ fontSize: 30 }}>{p.name}</h2>
@@ -216,49 +255,106 @@ function History({ hist, places, api, reload, openPlace, say }) {
   );
 }
 
-function Auth({ setAuth }) {
+function Auth({ setAuth, onGuest }) {
   const [mode, setMode] = useState("login");
-  const [f, setF] = useState({ username: "", password: "" });
+  const [f, setF] = useState({ username: "", password: "", confirmPassword: "" });
   const [err, setErr] = useState("");
   const submit = async (e) => {
     e.preventDefault();
-    const r = await fetch("/api/" + mode, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(f) });
-    const d = await r.json();
-    r.ok ? setAuth(d) : setErr(d.detail || "Lỗi");
+    setErr("");
+    if (mode === "register" && f.password !== f.confirmPassword) return setErr("Mật khẩu xác nhận không khớp");
+    try {
+      const r = await fetch("/api/" + mode, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ username: f.username.trim(), password: f.password }) });
+      const d = await r.json().catch(() => ({}));
+      r.ok ? setAuth(d) : setErr(d.detail || "Không thể xử lý yêu cầu");
+    } catch { setErr("Không thể kết nối đến máy chủ. Hãy kiểm tra backend."); }
   };
   return (
-    <form onSubmit={submit}>
-      <div className="field"><label>Tên đăng nhập</label><input value={f.username} onChange={(e) => setF({ ...f, username: e.target.value })} required /></div>
-      <div className="field"><label>Mật khẩu</label><input type="password" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required /></div>
+    <div className="auth-panel">
+      <div className="auth-intro"><strong>{mode === "login" ? "Chào mừng bạn trở lại" : "Tạo tài khoản mới"}</strong><span>{mode === "login" ? "Đăng nhập để lưu địa điểm và lịch sử nghe." : "Lưu lại những câu chuyện bạn yêu thích trên mọi lần ghé thăm."}</span></div>
+      <div className="auth-tabs"><button type="button" className={mode === "login" ? "active" : ""} onClick={() => { setMode("login"); setErr(""); }}>Đăng nhập</button><button type="button" className={mode === "register" ? "active" : ""} onClick={() => { setMode("register"); setErr(""); }}>Đăng ký</button></div>
+      <form onSubmit={submit}>
+        <div className="field"><label htmlFor="auth-username">Số điện thoại hoặc Email</label><input id="auth-username" type="text" inputMode="email" autoComplete="username" value={f.username} onChange={(e) => setF({ ...f, username: e.target.value })} required /></div>
+        <div className="field"><label htmlFor="auth-password">Mật khẩu</label><input id="auth-password" autoComplete={mode === "login" ? "current-password" : "new-password"} type="password" minLength="6" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required /></div>
+        {mode === "register" && <div className="field"><label htmlFor="auth-confirm-password">Xác nhận mật khẩu</label><input id="auth-confirm-password" autoComplete="new-password" type="password" minLength="6" value={f.confirmPassword} onChange={(e) => setF({ ...f, confirmPassword: e.target.value })} required /></div>}
       {err && <p className="delete-warning">{err}</p>}
-      <div className="row"><button className="btn primary">{mode === "login" ? "Đăng nhập" : "Tạo tài khoản"}</button>
-        <button type="button" className="text-link" onClick={() => setMode(mode === "login" ? "register" : "login")}>{mode === "login" ? "Chưa có tài khoản? Đăng ký" : "Đã có tài khoản? Đăng nhập"}</button></div>
-    </form>
+        <button className="btn primary auth-submit">{mode === "login" ? "Đăng nhập" : "Tạo tài khoản"}</button>
+      </form>
+      <div className="guest-divider"><span>hoặc</span></div>
+      <button type="button" className="btn guest-btn" onClick={onGuest}>Tiếp tục với tư cách khách</button>
+      <p className="guest-note">Chế độ khách chỉ dùng để xem, tìm kiếm và quét QR. Dữ liệu yêu thích và lịch sử sẽ không được lưu.</p>
+    </div>
   );
 }
 
 // (f) quét QR: nhập mã, ảnh QR hoặc camera (BarcodeDetector)
 function Scanner({ api, onFound, say }) {
   const [code, setCode] = useState("");
-  const video = useRef(); const stream = useRef(); const raf = useRef();
-  const resolve = async (c) => { try { stopCam(); onFound(await api("/qr/resolve?code=" + encodeURIComponent(c))); return true; } catch { say("Mã không thuộc địa điểm nào"); return false; } };
-  const stopCam = () => { cancelAnimationFrame(raf.current); stream.current?.getTracks().forEach((t) => t.stop()); stream.current = null; };
-  useEffect(() => stopCam, []);
-  const detector = () => ("BarcodeDetector" in window ? new window.BarcodeDetector({ formats: ["qr_code"] }) : (say("Trình duyệt chưa hỗ trợ đọc QR. Hãy nhập mã."), null));
-  const startCam = async () => {
-    const d = detector(); if (!d) return;
-    try {
-      stream.current = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-      video.current.hidden = false; video.current.srcObject = stream.current; await video.current.play();
-      const tick = async () => { if (!stream.current) return; const r = await d.detect(video.current).catch(() => []); if (r[0] && (await resolve(r[0].rawValue))) return; raf.current = requestAnimationFrame(tick); };
-      tick();
-    } catch { say("Không bật được camera (cần HTTPS hoặc localhost)"); }
+  const [cameraState, setCameraState] = useState("idle");
+  const video = useRef(); const controls = useRef(); const stream = useRef(); const reader = useRef(new BrowserQRCodeReader());
+  const resolving = useRef(false);
+  const stopCam = () => {
+    controls.current?.stop();
+    controls.current = null;
+    const tracks = stream.current?.getTracks() || video.current?.srcObject?.getTracks() || [];
+    tracks.forEach((track) => track.stop());
+    stream.current = null;
+    if (video.current) {
+      video.current.pause();
+      video.current.srcObject = null;
+    }
+    setCameraState("idle");
   };
-  const fromFile = async (f) => { const d = detector(); if (!d || !f) return; const r = await d.detect(await createImageBitmap(f)).catch(() => []); r[0] ? resolve(r[0].rawValue) : say("Không tìm thấy QR trong ảnh"); };
+  const resolve = async (c) => {
+    if (!c.trim() || resolving.current) return false;
+    resolving.current = true;
+    try { stopCam(); onFound(await api("/qr/resolve?code=" + encodeURIComponent(c))); return true; }
+    catch { resolving.current = false; say("Mã QR không thuộc địa điểm nào trong hệ thống"); return false; }
+  };
+  useEffect(() => stopCam, []);
+  const startCam = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) { setCameraState("insecure"); return; }
+    stopCam(); setCameraState("starting");
+    try {
+      stream.current = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      video.current.srcObject = stream.current;
+      await video.current.play();
+      controls.current = await reader.current.decodeFromVideoElement(video.current, (result) => {
+        if (result && !resolving.current) resolve(result.getText());
+      });
+      setCameraState("scanning");
+    } catch (e) {
+      stopCam();
+      if (e.name === "NotAllowedError" || e.name === "PermissionDeniedError") setCameraState("denied");
+      else if (e.name === "NotReadableError" || e.name === "TrackStartError") setCameraState("busy");
+      else setCameraState("error");
+    }
+  };
+  const fromFile = async (f) => {
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    try {
+      const result = await reader.current.decodeFromImageUrl(url);
+      resolve(result.getText());
+    } catch {
+      say("Không tìm thấy QR trong ảnh");
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  };
+  const cameraMessage = { starting: "Đang xin quyền truy cập camera…", scanning: "Đưa mã QR vào khung để quét", denied: "Bạn đã chặn camera. Hãy cho phép camera trong cài đặt trình duyệt rồi thử lại.", insecure: "Camera chỉ hoạt động trên HTTPS hoặc localhost.", busy: "Camera đang được ứng dụng khác sử dụng. Hãy đóng tab hoặc ứng dụng đang dùng camera rồi bấm thử lại.", error: "Không thể bật camera. Hãy kiểm tra quyền truy cập và thiết bị camera." }[cameraState];
   return (
     <>
-      <video ref={video} className="scanner-video" playsInline muted hidden />
-      <div className="row"><button className="btn primary" onClick={startCam}>◉ Bật camera</button>
+      {cameraState !== "idle" && <div className={"scanner-box " + (cameraState === "scanning" ? "active" : "")}>
+        <video ref={video} className="scanner-video" autoPlay playsInline muted hidden={cameraState !== "scanning"} />
+        {cameraState === "scanning" && <span className="scan-corners" aria-hidden="true" />}
+        {cameraMessage && <p className="scanner-status" role={["denied", "error", "insecure"].includes(cameraState) ? "alert" : "status"}>{cameraMessage}</p>}
+      </div>}
+      <div className="row"><button className="btn primary" onClick={startCam} disabled={cameraState === "starting" || cameraState === "scanning"}>◉ {cameraState === "starting" ? "Đang bật camera…" : "Bật camera"}</button>
+        {cameraState === "scanning" && <button className="btn" onClick={stopCam}>■ Dừng camera</button>}
         <label className="btn">↑ Chọn ảnh QR<input type="file" accept="image/*" hidden onChange={(e) => fromFile(e.target.files[0])} /></label></div>
       <div className="field" style={{ marginTop: 16 }}><label>Hoặc nhập mã QR</label>
         <div className="row"><input style={{ flex: 1 }} placeholder="SGECHO:dinh-doc-lap" value={code} onChange={(e) => setCode(e.target.value)} /><button className="btn" disabled={!code.trim()} onClick={() => resolve(code)}>Mở địa điểm</button></div></div>
