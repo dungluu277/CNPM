@@ -1,0 +1,116 @@
+[
+ {
+  "id": "dinh-doc-lap",
+  "name": "Dinh Độc Lập",
+  "enName": "Independence Palace",
+  "category": "historyCat",
+  "address": "135 Nam Kỳ Khởi Nghĩa, TP.HCM",
+  "lat": 10.777,
+  "lon": 106.6954,
+  "art": "palace",
+  "color": "#d5ded0",
+  "published": true,
+  "source": "https://dinhdoclap.gov.vn/kien-truc-dinh-doc-lap/",
+  "texts": {
+   "vi": "Chào mừng bạn đến với Dinh Độc Lập. Giữa trung tâm Thành phố Hồ Chí Minh, công trình này mang dấu ấn của kiến trúc sư Ngô Viết Thụ. Những đường nét hiện đại kết hợp với chi tiết gợi nhắc văn hóa truyền thống Việt Nam. Hãy quan sát lớp rèm hoa đá ở mặt đứng: hình dáng của nó gợi liên tưởng đến những đốt trúc. Khi bước qua khuôn viên rợp bóng cây, bạn có thể cảm nhận sự yên tĩnh khác hẳn nhịp phố bên ngoài.",
+   "en": "Welcome to the Independence Palace in Ho Chi Minh City. Designed by architect Ngo Viet Thu, the building brings modern architecture together with Vietnamese cultural references. Look closely at the stone screens across the facade, inspired by the shape of bamboo. The green grounds create a quiet setting in the heart of a busy city. Take a moment to observe the balance between the building, its gardens and the surrounding space.",
+   "ja": "ホーチミン市の統一会堂へようこそ。建築家ゴー・ヴィエット・トゥーが設計したこの建物は、近代建築とベトナムの伝統的な文化を組み合わせています。正面にある石の装飾は、竹を思わせる形をしています。緑豊かな庭を歩きながら、建物と自然の調和を感じてみてください。"
+  },
+  "audio": {}
+ },
+ {
+  "id": "buu-dien",
+  "name": "Bưu điện Thành phố",
+  "enName": "Saigon Central Post Office",
+  "category": "architecture",
+  "address": "2 Công xã Paris, TP.HCM",
+  "lat": 10.7799,
+  "lon": 106.6999,
+  "art": "post",
+  "color": "#ead5a7",
+  "published": true,
+  "source": "https://visithcmc.net/en/news/du-lich-quan-1",
+  "texts": {
+   "vi": "Bạn đang đứng trước Bưu điện Thành phố, một điểm nhấn kiến trúc quen thuộc ở trung tâm Sài Gòn. Mặt tiền màu vàng và các ô cửa tạo nên vẻ trang nhã, dễ nhận ra giữa khu phố. Bên trong là không gian sảnh rộng với hệ mái vòm cao. Ngoài việc ngắm kiến trúc, bạn có thể tìm hiểu hoạt động bưu chính và lựa chọn một tấm bưu thiếp để lưu lại kỷ niệm về thành phố.",
+   "en": "Welcome to the Saigon Central Post Office. Its yellow facade and tall windows make it a distinctive landmark in the city centre. Inside, the spacious hall and high vaulted ceiling invite you to look up and explore. Beyond its architectural appeal, the building connects visitors with the tradition of sending letters and postcards. A postcard can become a small, personal memory of your journey through Saigon.",
+   "ja": "サイゴン中央郵便局へようこそ。黄色い外観と高い窓が印象的な建物です。内部には広いホールと高いアーチ形の天井があります。建築を楽しんだ後は、旅の記念に絵はがきを選んでみてはいかがでしょうか。"
+  },
+  "audio": {}
+ },
+ {
+  "id": "cho-ben-thanh",
+  "name": "Chợ Bến Thành",
+  "enName": "Ben Thanh Market",
+  "category": "culture",
+  "address": "Đường Lê Lợi, khu vực Bến Thành, TP.HCM",
+  "lat": 10.7725,
+  "lon": 106.698,
+  "art": "market",
+  "color": "#e9c5ad",
+  "published": true,
+  "source": "https://visithcmc.vn/vi/kham-pha-cho-ben-thanh-tphcm-tu-a-z-5-phut-doc/",
+  "texts": {
+   "vi": "Chợ Bến Thành là một không gian mua bán gắn liền với hình ảnh Sài Gòn. Điểm dễ nhận biết của chợ là tháp đồng hồ ở cửa chính. Trong các lối đi, bạn có thể bắt gặp hàng lưu niệm, đồ thủ công và nhiều món ăn Việt Nam. Hãy đi chậm để quan sát màu sắc của các quầy hàng và cảm nhận âm thanh của một khu chợ đang hoạt động. Khi mua sắm, bạn nên hỏi giá trước để lựa chọn phù hợp.",
+   "en": "Ben Thanh Market is closely associated with the image of Saigon. Its clock tower is a familiar meeting point. Inside, the aisles bring together souvenirs, handicrafts and Vietnamese food. Walk slowly and notice the colours, sounds and daily exchanges that give the market its character. If you decide to buy something, ask about the price first and choose at your own pace.",
+   "ja": "ベンタイン市場はサイゴンを象徴する場所の一つです。入口の時計塔が目印になっています。市場の中には、お土産や手工芸品、ベトナム料理の店が並んでいます。色や音を楽しみながら歩いてみましょう。買い物をする時は、先に値段を確認してください。"
+  },
+  "audio": {}
+ },
+ {
+  "id": "nha-hat",
+  "name": "Nhà hát Thành phố",
+  "enName": "Saigon Opera House",
+  "category": "architecture",
+  "address": "7 Công trường Lam Sơn, TP.HCM",
+  "lat": 10.7766,
+  "lon": 106.7032,
+  "art": "opera",
+  "color": "#d8d8cd",
+  "published": true,
+  "source": "https://visithcmc.vn/vi/tin-tuc/top-20-places-you-need-to-visit-in-ho-chi-minh-city",
+  "texts": {
+   "vi": "Nhà hát Thành phố nằm giữa khu trung tâm, nổi bật với mặt tiền trang trí cầu kỳ và bậc thềm rộng. Đây là một địa điểm gắn với đời sống biểu diễn nghệ thuật của thành phố. Từ phía quảng trường, hãy quan sát cách các cột, vòm cửa và phù điêu tạo nên nhịp điệu cho mặt đứng. Nếu muốn vào xem biểu diễn, bạn cần tìm hiểu chương trình và quy định của đơn vị tổ chức trước chuyến đi.",
+   "en": "The Saigon Opera House stands in the city centre, recognised by its decorative facade and broad entrance steps. It is a landmark associated with the performing arts. From the square, notice how columns, arches and sculptural details shape the front of the building. To attend a performance, check the programme and the organiser’s admission arrangements before your visit.",
+   "ja": "市民劇場は、装飾豊かな正面と広い階段が印象的な建物です。街の舞台芸術と深く結びついています。広場から柱やアーチ、彫刻の細部を眺めてみてください。公演を見たい場合は、事前に演目や入場方法を確認しましょう。"
+  },
+  "audio": {}
+ },
+ {
+  "id": "nguyen-hue",
+  "name": "Phố đi bộ Nguyễn Huệ",
+  "enName": "Nguyen Hue Walking Street",
+  "category": "culture",
+  "address": "Đường Nguyễn Huệ, TP.HCM",
+  "lat": 10.774,
+  "lon": 106.7038,
+  "art": "street",
+  "color": "#cfddd5",
+  "published": true,
+  "source": "https://visithcmc.net/en/news/du-lich-quan-1",
+  "texts": {
+   "vi": "Phố đi bộ Nguyễn Huệ là không gian để cảm nhận nhịp sống đô thị ở trung tâm Thành phố Hồ Chí Minh. Dọc tuyến phố, những công trình kiến trúc và các không gian sinh hoạt cộng đồng tạo nên nhiều góc nhìn khác nhau về Sài Gòn. Bạn có thể thong thả đi bộ, quan sát các tòa nhà và tìm một góc nghỉ chân. Không gian nơi đây thay đổi theo thời điểm và những hoạt động được tổ chức trong thành phố.",
+   "en": "Nguyen Hue Walking Street offers a place to experience daily urban life in central Ho Chi Minh City. Buildings, open spaces and community activities create different perspectives on Saigon. Take a gentle walk, look at the architecture and find a place to pause. The atmosphere changes with the time of day and the events taking place in the city.",
+   "ja": "グエンフエ歩行者通りでは、ホーチミン市の都市生活を感じることができます。建物や広場、街の活動がさまざまな景色を作り出しています。ゆっくり歩き、建築を眺め、ひと休みしてみましょう。時間帯やイベントによって雰囲気も変わります。"
+  },
+  "audio": {}
+ },
+ {
+  "id": "bach-dang",
+  "name": "Bến Bạch Đằng",
+  "enName": "Bach Dang Riverside",
+  "category": "river",
+  "address": "Đường Tôn Đức Thắng, ven sông Sài Gòn, TP.HCM",
+  "lat": 10.7761,
+  "lon": 106.7088,
+  "art": "river",
+  "color": "#c8ddd9",
+  "published": true,
+  "source": "https://visithcmc.vn/vi/chao-mung-den-voi-thanh-pho-ho-chi-minh/",
+  "texts": {
+   "vi": "Bến Bạch Đằng mở ra một khoảng nhìn rộng bên sông Sài Gòn. Từ lối đi ven bờ, bạn có thể quan sát dòng sông, những con tàu và cảnh quan đô thị phía đối diện. Đây là nơi thích hợp để tạm dừng hành trình và cảm nhận một nhịp khác của thành phố. Nếu muốn trải nghiệm phương tiện đường thủy, hãy kiểm tra lịch chạy và thông tin vé trực tiếp với đơn vị cung cấp dịch vụ.",
+   "en": "Bach Dang Riverside opens onto the Saigon River. From the promenade, you can watch boats and look across the water towards the city skyline. It is a place to pause and experience a different rhythm of Ho Chi Minh City. If you would like to travel on the river, check schedules and ticket information directly with the service operator.",
+   "ja": "バクダン埠頭からはサイゴン川を広く見渡すことができます。川沿いの道を歩きながら、船や対岸の街並みを眺めてみましょう。街の違うリズムを感じられる場所です。水上交通を利用する場合は、運航会社に時刻や乗車券を確認してください。"
+  },
+  "audio": {}
+ }
+]
